@@ -10,23 +10,29 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+import environ
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# ENV Variables: Injected safely to settings using django-environ package
+
+# 1. Resolving env file path
 BASE_DIR = Path(__file__).resolve().parent.parent
+FILE_PATH = os.path.join(BASE_DIR, '.env')
 
+# 2. Loads env variables to os.environ
+environ.Env.read_env(FILE_PATH)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
+# 3. Creates accessor/lens for type casting
+env = environ.Env(
+    DEBUG=(bool, False)
+)
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r4@p*ghc$o!))k80^+i9zv2!$%kh+m)e258-k3$nxs^!zr@zbw'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# 4. Assign the variables
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -75,11 +81,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'sms_gateway_db'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
